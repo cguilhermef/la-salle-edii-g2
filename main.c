@@ -28,44 +28,59 @@ void compactarArquivo () {
 	* assim, sequências que podem ser otimizadas.
 	*/
 	char now;
-	char before = '@';
-	int count = 0;
+	char before;
+	int count;
+	
+	if (!feof(originalFile)) {
+		before = getc(originalFile);
+		count = 1;
+	}
+	
 	while(!feof(originalFile)) {
 		now = getc(originalFile);
-		if (count == 0) {
+		/**
+		* Se o caracter anterior for igual ao caracter atual,
+		* faz parte de uma sequência
+		*/
+		if (now == before) {
 			/**
-			* se a contagem é zero, significa que o caracter anterior
-			* já foi resolvido e deve ser iniciado um novo ciclo
+			* A maior sequência representada será de 9 caracteres, evitando 
+			* uma notação ambígua onde @1234@ poderia significar:
+			* (12 vezes 3)4
+			* 123 vezes 4
 			*/
-			before = now;
-			count++;
-		} else if (now == before) {
-			/**
-			* se o caracter atual é igual ao anterior, temos o início
-			* de uma sequência. Apenas é incrementado o contador
-			*/
-			count++;
-		} else if (count == 1) {
-			/** 
-			* Caso o caracter atual seja diferente do atual,
-			* e o caracter anterior ocorreu apenas uma vez,
-			* não houve sequência. O caracter anterior é impresso
-			* e o atual passa a ser o anterior.
-			*/
-			putc('@', newFile);
-			putc(before, newFile);
-			before = now;
+			if (count < 9 ){
+				count++;
+			} else {
+				/**
+				* Caso esta seja a décima ocorrência, registra a notação de 
+				* 9 ocorrências e reinicia o contador em 1.
+				*/
+				fprintf(newFile, "@%d%c", count, now);	
+				count = 1;
+			}
+		/**
+		* se o caracter anterior for diferente do atual
+		*/
 		} else {
 			/**
-			* Não caindo em nenhum dos IF anteriores, significa que 
-			* há uma sequência de caracter repetido, mas que o caracter
-			* atual difere do anterior. A sequência então é resumida e 
-			* impressa, com o caracter anterior. O caracter atual passa
-			* a ser o anterior.
+			* e countou-se apenas uma ocorrência do caracter anterior, ele é impresso
+			* no arquivo de saída. O caracter atual passa a ser o anterior.
 			*/
-			fprintf(newFile, "@%d%c", count, before);
+			if (count == 1) {
+				fprintf(newFile, "%c", before);
+			
+			/** 
+			* se a contagem do caracter anterior for maior que 1, então é impressa
+			* a notação de contagem. O contador é reiniciado para 1 - a primeira
+			* ocorrência do caracter atual - e o caracter atual passa a ser o anterior.
+			*/
+			} else {
+				fprintf(newFile, "@%d%c", count, before);	
+				count = 1;
+			}
 			before = now;
-			count = 1;
+			
 		}
 	}
 	fclose(originalFile);
