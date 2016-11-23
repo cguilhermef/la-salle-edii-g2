@@ -51,5 +51,6 @@ Mkfile.old
 dkms.conf
 
 # Especificos
+*.layout
 compactado.txt
 descompactado.txt
