@@ -110,57 +110,26 @@ void descompactarArquivo() {
 		return;
 	}
 	
-	char buffer[100];
-	memset(buffer, '\0', 100);
-	char num[100];
-	memset(num, '\0', 100);
-	
 	char ch;
-	char now;
-	int size = 0;
-	int c = 0;
+	int count = 0;
 	int n = 0;
-	
-	while(!feof(compressedFile)) {
-		now = getc(compressedFile);
-		if (now == '@') {
-			if (size == 0) {
-				memset(buffer, '\0', 100);
-				memset(num, '\0', 100);
-			} else {
-				if (size == 1) {
-					putc(ch, uncompressedFile);
-				} else {
-					strncpy(num, buffer, size-1);
-					n = atoi(num);
-					ch = buffer[size-1];
-					c = 0;
-					while(c < n) {
-						fprintf(uncompressedFile, "%c", ch);
-						c++;
-					}
-				}
-				memset(buffer, '\0', 100);
-				size = 0;
+	if (!feof(compressedFile)) {
+		ch = getc(compressedFile);
+	}
+	while (!feof(compressedFile)) {
+		if (ch == '@') {
+			ch = getc(compressedFile);
+			n = ch - '0';
+			ch = getc(compressedFile);
+			count = 0;
+			while(count < n) {
+				putc(ch, uncompressedFile);
+				count++;
 			}
 		} else {
-			buffer[size] = now;
-			size++;
-		}
-	}
-	
-	if (size == 1) {
-		putc(ch, uncompressedFile);
-	}
-	if (size > 1){
-		strncpy(num, buffer, size-1);
-		n = atoi(num);
-		ch = buffer[size-1];
-		c = 0;
-		while(c < n) {
 			putc(ch, uncompressedFile);
-			c++;
 		}
+		ch = getc(compressedFile);
 	}
 	
 	fclose(compressedFile);
