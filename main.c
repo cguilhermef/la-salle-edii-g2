@@ -113,23 +113,58 @@ void descompactarArquivo() {
 	char ch;
 	int count = 0;
 	int n = 0;
+	/** 
+	* Pega-se o primeiro caracter, antes de inciar o laço.
+	* Isso impede que um último caracter de 'sujeira' seja
+	* impresso no arquivo descompactado, na última iteração
+	* do while
+	*/
 	if (!feof(compressedFile)) {
 		ch = getc(compressedFile);
 	}
+	/**
+	* percorre-se o arquivo compactado, caracter à caracter
+	* identificando quando se trata de um token ou de um
+	* caracter normal
+	*/
 	while (!feof(compressedFile)) {
 		if (ch == '@') {
+			/**
+			* Caso o caracter seja o token @, deve-se
+			* ler os próximos dois caracteres:
+			* O primeiro é o número de repetições
+			* O segundo é o caracter a ser repetido
+			*/
 			ch = getc(compressedFile);
-			n = ch - '0';
+			n = ch - '0'; //converte em inteiro o número lido como char
 			ch = getc(compressedFile);
 			count = 0;
+			/**
+			* Executa-se um laço para escrever o 
+			* caracter n vezes no arquivo descompactado
+			*/
 			while(count < n) {
 				putc(ch, uncompressedFile);
 				count++;
 			}
 		} else {
+			/**
+			* Caso o caracter não seja um token,
+			* simplesmente escreve-se o caracter atual
+			* no arquivo.
+			* Sabe-se que o caracter atual não se trata de um caracter
+			* que indica número de repetição ou caracter a ser repetido
+			* pois isto é tratado no IF.
+			*/
 			putc(ch, uncompressedFile);
 		}
-		ch = getc(compressedFile);
+		/**
+		* Por fim, é lido o próximo caracter a ser analisado, caso 
+		* o arquivo ainda não tenha chegado ao fim.
+		*/
+		if (!feof(compressedFile)) {
+			ch = getc(compressedFile);
+		}
 	}
 	
 	fclose(compressedFile);
